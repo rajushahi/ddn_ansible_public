@@ -1,0 +1,29 @@
+---
+- name: Deploy docker services
+  hosts: ip
+  become: true
+
+  tasks:
+  - git:
+      repo: 'https://{{ gituser | urlencode }}:{{ gitpassword }}@github.com/rajushahi/ddn-docker-public.git'
+      dest: /srv/docker
+      clone: yes
+      update: yes
+      accept_hostkey: yes
+
+  - name: Create a network
+    docker_network:
+      state: present
+      name: nginx-proxy
+
+  - name: run the service nginx-proxy docker-compose.yml
+    docker_service:
+      project_src: /srv/docker/ddn-nginx
+
+  - name: run the service letsencrypt docker-compose.yml
+    docker_service:
+      project_src: /srv/docker/ddn-letsencrypt
+
+  - name: run the db and presta services docker-compose.yml
+    docker_service:
+      project_src: /srv/docker
